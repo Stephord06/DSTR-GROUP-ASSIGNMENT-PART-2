@@ -2,7 +2,6 @@
 
 #include <cerrno>
 #include <climits>
-#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -42,12 +41,6 @@ bool readTextLine(const char *prompt, char *buffer, size_t maxLen) {
     return true;
 }
 
-static void normalizeRequestId(char *requestId) {
-    if (!requestId) return;
-    for (size_t i = 0; requestId[i] != '\0'; ++i)
-        requestId[i] = static_cast<char>(toupper(static_cast<unsigned char>(requestId[i])));
-}
-
 static void printAssignmentResult(int result, const char *requestId, int resourceId) {
     if (result == ASSIGN_OK) {
         char typeText[RESOURCE_TEXT_SIZE];
@@ -56,7 +49,7 @@ static void printAssignmentResult(int result, const char *requestId, int resourc
                             typeText, sizeof(typeText));
         printf("Request %s assigned to %s resource %d.\n", requestId, typeText, resourceId);
     } else if (result == ASSIGN_INVALID_REQUEST) {
-        cout << "Invalid request ID, parcel ID, or service type.\n";
+        cout << "The selected request is no longer active, its parcel is unavailable, or its ID cannot be stored.\n";
     } else if (result == ASSIGN_DUPLICATE) {
         cout << "This request or parcel already has an active resource assignment.\n";
     } else if (result == ASSIGN_NO_SUITABLE) {
@@ -66,7 +59,7 @@ static void printAssignmentResult(int result, const char *requestId, int resourc
     }
 }
 
-int displayResourceMenu() {
+int displayResourceMenu(TreeNode& parcels, Queue& serviceRequests) {
     if (!resourceQueueInitialized) {
         initResourceQueue(&resourcePool);
         resourceQueueInitialized = true;
@@ -76,7 +69,7 @@ int displayResourceMenu() {
         cout << "\n=========================================\n"
              << " Task 3: Collection & Delivery Resource Management\n"
              << "=========================================\n"
-             << "1. Register Resource\n2. Assign Service Request\n3. View Next Available\n"
+             << "1. Register Resource\n2. Assign Existing Service Request\n3. View Next Available\n"
              << "4. Search Resource\n5. Release Resource\n6. Update Status\n"
              << "7. Remove Resource\n8. Show Resource Board\n9. Show Activity History\n0. Exit\n"
              << "=========================================\n";
@@ -96,38 +89,38 @@ int displayResourceMenu() {
             break;
         }
         case 2: {
-            char requestId[RESOURCE_TEXT_SIZE];
-            int parcelId = 0, serviceType = 0, assignedResourceId = 0;
-            if (!readTextLine("Request ID (e.g. REQ1): ", requestId, sizeof(requestId)) ||
-                !readInt("Parcel ID: ", &parcelId) ||
-                !readInt("Service type (1=Collection, 2=Campus Delivery, 3=Special Handling, 4=Re-Delivery, 5=Return): ", &serviceType)) {
-                cout << "Invalid request assignment input.\n"; break;
+            showAssignableRequests(&serviceRequests);
+            int position = 0, assignedResourceId = 0;
+            char requestId[RESOURCE_REQUEST_ID_SIZE] = {};
+            if (serviceRequests.isEmpty()) break;
+            if (!readInt("Select a request by its list number: ", &position)) {
+                cout << "Invalid request selection.\n"; break;
             }
-            normalizeRequestId(requestId);
-            const int result = assignRequestToResource(&resourcePool, requestId, parcelId,
-                                                       serviceType, &assignedResourceId);
+            const int result = assignRequestByPosition(&resourcePool, &serviceRequests, &parcels,
+                                                       position, &assignedResourceId,
+                                                       requestId, sizeof(requestId));
             printAssignmentResult(result, requestId, assignedResourceId);
             break;
         }
         case 3: {
             int type = 0;
             if (!readInt("Resource type (1=Counter, 2=Delivery): ", &type)) { cout << "Invalid type.\n"; break; }
-            const int idx = findNextAvailableIndex(&resourcePool, type);
-            if (idx < 0) cout << "No available resource found for that type.\n";
-            else printf("Next available resource: %d\n", resourcePool.records[idx].id);
+            const int index = findNextAvailableIndex(&resourcePool, type);
+            if (index < 0) cout << "No available resource found for that type.\n";
+            else printf("Next available resource: %d\n", resourcePool.records[index].id);
             break;
         }
         case 4: {
             int id = 0;
             if (!readInt("Resource ID to search: ", &id)) { cout << "Invalid ID.\n"; break; }
-            const int idx = findResourceIndex(&resourcePool, id);
-            if (idx < 0) { cout << "Resource not found.\n"; break; }
+            const int index = findResourceIndex(&resourcePool, id);
+            if (index < 0) { cout << "Resource not found.\n"; break; }
             char typeText[RESOURCE_TEXT_SIZE], statusText[RESOURCE_TEXT_SIZE], assignmentText[RESOURCE_TEXT_SIZE];
-            getResourceTypeText(resourcePool.records[idx].type, typeText, sizeof(typeText));
-            getResourceStatusText(resourcePool.records[idx].status, statusText, sizeof(statusText));
-            getAssignmentText(&resourcePool, idx, assignmentText, sizeof(assignmentText));
+            getResourceTypeText(resourcePool.records[index].type, typeText, sizeof(typeText));
+            getResourceStatusText(resourcePool.records[index].status, statusText, sizeof(statusText));
+            getAssignmentText(&resourcePool, index, assignmentText, sizeof(assignmentText));
             printf("Resource ID: %d | Type: %s | Status: %s | Assignment: %s\n",
-                   resourcePool.records[idx].id, typeText, statusText, assignmentText);
+                   resourcePool.records[index].id, typeText, statusText, assignmentText);
             break;
         }
         case 5: {
@@ -143,7 +136,7 @@ int displayResourceMenu() {
                 cout << "Invalid status input.\n"; break;
             }
             if (status != RESOURCE_AVAILABLE && status != RESOURCE_UNAVAILABLE) {
-                cout << "Busy status is set by assigning a request; release a busy resource before changing it.\n"; break;
+                cout << "Use release to make a busy resource available; busy status is assigned with a request.\n"; break;
             }
             if (updateResourceStatus(&resourcePool, id, status)) cout << "Resource status updated.\n";
             else cout << "Status update failed.\n";

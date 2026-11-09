@@ -19,14 +19,6 @@ enum ResourceStatus {
     RESOURCE_UNAVAILABLE = 3
 };
 
-enum Task3ServiceType {
-    TASK3_RECIPIENT_COLLECTION = 1,
-    TASK3_CAMPUS_DELIVERY = 2,
-    TASK3_SPECIAL_HANDLING = 3,
-    TASK3_RE_DELIVERY = 4,
-    TASK3_RETURN_TO_SENDER = 5
-};
-
 enum AssignResult {
     ASSIGN_OK = 0,
     ASSIGN_INVALID_REQUEST,
@@ -50,6 +42,9 @@ struct ResourceQueue {
     int size;
 };
 
+struct Queue;
+struct TreeNode;
+
 extern ResourceQueue resourcePool;
 
 void initResourceQueue(ResourceQueue *queue);
@@ -64,10 +59,10 @@ void getResourceStatusText(int status, char *out, size_t len);
 void getAssignmentText(const ResourceQueue *queue, int index, char *out, size_t len);
 
 bool registerResource(ResourceQueue *queue, int resourceId, int resourceType);
-bool assignResource(ResourceQueue *queue, int resourceId, const char *requestId,
-                    int parcelId, int requiredResourceType);
-int assignRequestToResource(ResourceQueue *queue, const char *requestId,
-                            int parcelId, int serviceType, int *assignedResourceId);
+int assignRequestByPosition(ResourceQueue *resources, const Queue *requests,
+                            TreeNode *parcels, int activePosition,
+                            int *assignedResourceId, char *assignedRequestId,
+                            size_t requestIdCapacity);
 bool releaseResource(ResourceQueue *queue, int resourceId);
 bool updateResourceStatus(ResourceQueue *queue, int resourceId, int newStatus);
 bool removeResource(ResourceQueue *queue, int resourceId);
@@ -75,9 +70,10 @@ bool removeResource(ResourceQueue *queue, int resourceId);
 void recordResourceActivity(const char *message);
 void showResourceActivityHistory();
 void showResourceBoard(const ResourceQueue *queue);
+void showAssignableRequests(const Queue *requests);
 
 bool readInt(const char *prompt, int *value);
 bool readTextLine(const char *prompt, char *buffer, size_t maxLen);
-int displayResourceMenu();
+int displayResourceMenu(TreeNode& parcels, Queue& serviceRequests);
 
 #endif
