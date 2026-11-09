@@ -84,6 +84,19 @@ void getAssignmentText(const ResourceQueue *queue, int index, char *out, size_t 
     if (!out || len == 0) return;
     if (!queue || index < 0 || index >= RESOURCE_MAX_SIZE || queue->size < 0 ||
         queue->size > RESOURCE_MAX_SIZE) {
+    if (!queue || index < 0 || index >= RESOURCE_MAX_SIZE) {
+        snprintf(out, len, "-");
+        return;
+    }
+
+    bool indexIsActive = false;
+    for (int offset = 0; offset < queue->size; ++offset) {
+        if ((queue->head + offset) % RESOURCE_MAX_SIZE == index) {
+            indexIsActive = true;
+            break;
+        }
+    }
+    if (!indexIsActive) {
         snprintf(out, len, "-");
         return;
     }
@@ -195,6 +208,8 @@ bool updateResourceStatus(ResourceQueue *queue, int resourceId, int newStatus) {
     if (index == -1) return false;
     ResourceRecord &record = queue->records[index];
     if (record.status == newStatus || (record.status == RESOURCE_BUSY && newStatus == RESOURCE_UNAVAILABLE))
+    if (record.status == newStatus) return false;
+    if (record.status == RESOURCE_BUSY && newStatus == RESOURCE_UNAVAILABLE) {
         return false;
 
     if (newStatus != RESOURCE_BUSY) {
