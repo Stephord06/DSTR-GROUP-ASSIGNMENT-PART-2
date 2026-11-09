@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "parcel.cpp"
+#include "../parcel.cpp"
 
 using namespace std;
 
