@@ -9,7 +9,7 @@ struct TreeNode
   TreeNode *leftnode = nullptr;
   TreeNode *rightnode = nullptr;
 
-  // Constructors to support C++11 allocation
+  // Constructors to support C++11 initialization
   TreeNode() : leftnode(nullptr), rightnode(nullptr) {}
   TreeNode(const Parcel &p) : parcel(p), leftnode(nullptr), rightnode(nullptr) {}
 

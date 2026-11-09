@@ -3,7 +3,8 @@
 #include "task3/resourceTask3.cpp"
 #include "task3/resourceTask3Menu.cpp"
 #include "task4/ui.cpp"
-#include "task5/ParcelCategoryList.hpp"
+#include "task5/ParcelCategoryTree.cpp"
+#include "task5/ui.cpp"
 #include "tree.cpp"
 #include <iostream>
 #include <string>
