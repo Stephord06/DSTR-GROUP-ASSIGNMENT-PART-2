@@ -8,8 +8,10 @@
 
 using namespace std;
 
+// Single shared queue: defined once in resourceTask3.cpp so Task 3 sees the same requests.
+extern Queue serviceQueue;
+
 void displayServiceMenu() {
-    Queue serviceQueue; // Keep outside loop so requests stay stored
     while (true) {
         int selection = 0;
         cout << "\n========================================================" << endl;
