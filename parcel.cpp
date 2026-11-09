@@ -69,9 +69,24 @@ inline string fragile_to_string(bool is_fragile)
 
 struct Parcel
 {
-  string recipient_name, delivery_address, arrival_date;
-  int recipientID, parcelID;
+  string recipient_name;
+  string delivery_address;
+  string arrival_date;
+  int recipientID;
+  int parcelID;
   bool fragile;
   ParcelType type;
-  ParcelStatus status = ParcelStatus::ORDERED;
+  ParcelStatus status;
+
+  // Default constructor
+  Parcel()
+      : recipient_name(""), delivery_address(""), arrival_date(""),
+        recipientID(0), parcelID(0), fragile(false),
+        type(DOCUMENT), status(ORDERED) {}
+
+  // Parameterized constructor (supports both 7-arg and 8-arg initializations)
+  Parcel(string name, string addr, string date, int rID, int pID, bool frag,
+         ParcelType t, ParcelStatus s = ORDERED)
+      : recipient_name(name), delivery_address(addr), arrival_date(date),
+        recipientID(rID), parcelID(pID), fragile(frag), type(t), status(s) {}
 };

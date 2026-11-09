@@ -12,12 +12,14 @@ using namespace std;
 
 void runTask5Menu();
 
-int main() {
-  TreeNode parcels =
-      TreeNode{Parcel{"", "", "", 0, 0, false, ParcelType::DOCUMENT}};
+int main()
+{
+  TreeNode *parcels = new TreeNode();
   Queue serviceQueue;
-  int selection = 6;
-  do {
+
+  int selection = 0;
+  do
+  {
     cout << "Welcome to the Parcel Management System!" << endl;
     cout << "Please select an option:" << endl;
     cout << "1. Task 1 - Parcel Intake, Sorting and Processing Module" << endl;
@@ -30,7 +32,8 @@ int main() {
     cout << "5. Task 5 - Parcel Category Organization Module" << endl;
     cout << "6. Exit" << endl;
     cout << "Enter your selection (1-6): ";
-    if (!(cin >> selection)) {
+    if (!(cin >> selection))
+    {
       if (cin.eof())
         break;
       cin.clear();
@@ -40,12 +43,13 @@ int main() {
     }
     cin.ignore(10000, '\n');
 
-    switch (selection) {
+    switch (selection)
+    {
     case 1:
       full_menu(*parcels);
       break;
     case 2:
-      displayServiceMenu(parcels, serviceQueue);
+      displayServiceMenu(*parcels, serviceQueue);
       break;
     case 3:
       displayResourceMenu();
@@ -65,5 +69,6 @@ int main() {
     }
   } while (selection != 6);
 
+  delete parcels;
   return 0;
 }
