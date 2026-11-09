@@ -8,8 +8,8 @@
 
 using namespace std;
 
-// Single shared queue: defined once in resourceTask3.cpp so Task 3 sees the same requests.
-extern Queue serviceQueue;
+// Shared service-request queue used by the Task 2 menu.
+Queue serviceQueue;
 
 void displayServiceMenu() {
     while (true) {

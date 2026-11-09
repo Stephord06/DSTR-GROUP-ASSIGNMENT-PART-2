@@ -2,6 +2,7 @@
 #include "tree.cpp"
 #include "task3/resourceTask3.cpp"
 #include "task3/resourceTask3Menu.cpp"
+#include "task-4-parcel-activity-and-record-management-module/ui.cpp"
 #include <iostream>
 #include <string>
 
@@ -40,7 +41,7 @@ int main() {
       displayResourceMenu();
       break;
     case 4:
-      cout << "Task 4 is not connected yet." << endl;
+      ActivityModuleUI();
       break;
     case 5:
       cout << "Task 5 is not connected yet." << endl;

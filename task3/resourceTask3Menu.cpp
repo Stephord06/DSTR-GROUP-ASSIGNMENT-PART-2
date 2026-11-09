@@ -3,6 +3,7 @@
 #include <cerrno>
 #include <climits>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 
@@ -28,31 +29,27 @@ bool readInt(const char *prompt, int *value) {
         menuInputClosed = true;
         return false;
     }
+    if (!strchr(line, '\n') && !feof(stdin)) {
+        clearInputBuffer();
+        return false;
+    }
 
     char *end = nullptr;
     errno = 0;
     long parsed = strtol(line, &end, 10);
     if (end == line || errno == ERANGE || parsed < INT_MIN || parsed > INT_MAX) {
-        clearInputBuffer();
         return false;
     }
 
-    while (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\n') {
-        ++end;
-    }
-    if (*end != '\0') {
-        clearInputBuffer();
-        return false;
-    }
+    while (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\n') ++end;
+    if (*end != '\0') return false;
 
-    if (value) {
-        *value = static_cast<int>(parsed);
-    }
+    if (value) *value = static_cast<int>(parsed);
     return true;
 }
 
 bool readTextLine(const char *prompt, char *buffer, size_t maxLen) {
-    if (!buffer || maxLen == 0) return false;
+    if (!buffer || maxLen == 0 || maxLen > static_cast<size_t>(INT_MAX)) return false;
     if (prompt) {
         printf("%s", prompt);
         fflush(stdout);
@@ -60,6 +57,11 @@ bool readTextLine(const char *prompt, char *buffer, size_t maxLen) {
 
     if (!fgets(buffer, static_cast<int>(maxLen), stdin)) {
         menuInputClosed = true;
+        return false;
+    }
+    if (!strchr(buffer, '\n') && !feof(stdin)) {
+        clearInputBuffer();
+        buffer[0] = '\0';
         return false;
     }
 
@@ -103,27 +105,20 @@ int displayResourceMenu() {
                 cout << "Invalid resource input." << endl;
                 break;
             }
-            if (registerResource(&resourcePool, id, type)) {
-                cout << "Resource registered successfully." << endl;
-            } else {
-                cout << "Could not register resource." << endl;
-            }
+            if (registerResource(&resourcePool, id, type)) cout << "Resource registered successfully." << endl;
+            else cout << "Could not register resource." << endl;
             break;
         }
         case 2: {
             int id = 0, kind = 0, itemId = 0, parcelId = 0;
             if (!readInt("Resource ID: ", &id) ||
                 !readInt("Assignment kind (1=Parcel, 2=Request): ", &kind) ||
-                !readInt("Item ID: ", &itemId) ||
-                !readInt("Parcel ID: ", &parcelId)) {
+                !readInt("Item ID: ", &itemId) || !readInt("Parcel ID: ", &parcelId)) {
                 cout << "Invalid assignment input." << endl;
                 break;
             }
-            if (assignResource(&resourcePool, id, kind, itemId, parcelId)) {
-                cout << "Assignment successful." << endl;
-            } else {
-                cout << "Assignment failed." << endl;
-            }
+            if (assignResource(&resourcePool, id, kind, itemId, parcelId)) cout << "Assignment successful." << endl;
+            else cout << "Assignment failed." << endl;
             break;
         }
         case 3: {
@@ -133,11 +128,8 @@ int displayResourceMenu() {
                 break;
             }
             const int idx = findNextAvailableIndex(&resourcePool, type);
-            if (idx == -1) {
-                cout << "No available resource found for that type." << endl;
-            } else {
-                printf("Next available resource: %d\n", resourcePool.records[idx].id);
-            }
+            if (idx == -1) cout << "No available resource found for that type." << endl;
+            else printf("Next available resource: %d\n", resourcePool.records[idx].id);
             break;
         }
         case 4: {
@@ -151,14 +143,10 @@ int displayResourceMenu() {
                 cout << "Resource not found." << endl;
                 break;
             }
-
-            char typeText[RESOURCE_TEXT_SIZE];
-            char statusText[RESOURCE_TEXT_SIZE];
-            char assignmentText[RESOURCE_TEXT_SIZE];
+            char typeText[RESOURCE_TEXT_SIZE], statusText[RESOURCE_TEXT_SIZE], assignmentText[RESOURCE_TEXT_SIZE];
             getResourceTypeText(resourcePool.records[idx].type, typeText, sizeof(typeText));
             getResourceStatusText(resourcePool.records[idx].status, statusText, sizeof(statusText));
             getAssignmentText(&resourcePool, idx, assignmentText, sizeof(assignmentText));
-
             printf("Resource ID: %d | Type: %s | Status: %s | Assignment: %s\n",
                    resourcePool.records[idx].id, typeText, statusText, assignmentText);
             break;
@@ -169,11 +157,8 @@ int displayResourceMenu() {
                 cout << "Invalid ID." << endl;
                 break;
             }
-            if (releaseResource(&resourcePool, id)) {
-                cout << "Resource released successfully." << endl;
-            } else {
-                cout << "Release failed." << endl;
-            }
+            if (releaseResource(&resourcePool, id)) cout << "Resource released successfully." << endl;
+            else cout << "Release failed." << endl;
             break;
         }
         case 6: {
@@ -190,11 +175,8 @@ int displayResourceMenu() {
                 cout << "Invalid status value." << endl;
                 break;
             }
-            if (updateResourceStatus(&resourcePool, id, status)) {
-                cout << "Resource status updated." << endl;
-            } else {
-                cout << "Status update failed." << endl;
-            }
+            if (updateResourceStatus(&resourcePool, id, status)) cout << "Resource status updated." << endl;
+            else cout << "Status update failed." << endl;
             break;
         }
         case 7: {
@@ -203,11 +185,8 @@ int displayResourceMenu() {
                 cout << "Invalid ID." << endl;
                 break;
             }
-            if (removeResource(&resourcePool, id)) {
-                cout << "Resource removed successfully." << endl;
-            } else {
-                cout << "Resource removal failed." << endl;
-            }
+            if (removeResource(&resourcePool, id)) cout << "Resource removed successfully." << endl;
+            else cout << "Resource removal failed." << endl;
             break;
         }
         case 8:

@@ -1,98 +1,128 @@
 #include <iostream>
+#include <new>
 #include <string>
 #include "parcel.cpp"
 
 using namespace std;
 
-// Parameter Setup
 struct ActivityNode {
-
     int activityID;
     int parcelID;
     string activityType;
     string activityDescription;
-
     ParcelStatus previousStatus;
     ParcelStatus newStatus;
     string timestamp;
-
     ActivityNode *next;
-
 };
 
 class ActivityStack {
 private:
     ActivityNode *topNode;
-    int count;
+    int nextActivityID;
 
-public:
-    ActivityStack() {
-        topNode = nullptr;
-        count = 0;
+    static string statusText(ParcelStatus status) {
+        switch (status) {
+            case ORDERED: return "Ordered";
+            case SHIPED: return "Shipped";
+            case DELIVERED: return "Delivered";
+            default: return "Unknown";
+        }
     }
 
-    bool isEmpty() {
+public:
+    ActivityStack() : topNode(nullptr), nextActivityID(1) {}
+    ActivityStack(const ActivityStack&) = delete;
+    ActivityStack& operator=(const ActivityStack&) = delete;
+
+    ~ActivityStack() {
+        while (topNode != nullptr) {
+            ActivityNode *temp = topNode;
+            topNode = topNode->next;
+            delete temp;
+        }
+    }
+
+    bool isEmpty() const {
         return topNode == nullptr;
     }
 
+    bool push(int pID, const string& action, const string& desc,
+              ParcelStatus prev, ParcelStatus newStat, const string& time) {
+        ActivityNode *newNode = new (nothrow) ActivityNode;
+        if (!newNode) {
+            cerr << "Memory allocation failed; activity was not recorded." << endl;
+            return false;
+        }
 
-    // Push Function: To add the related data into the stack (Record the activity)
-    void push(int pID, string action, string desc, ParcelStatus prev, ParcelStatus newStat, string time) {
-        ActivityNode *newNode = new ActivityNode();
-        newNode->activityID = count + 1;
-        newNode->parcelID = pID; // Placeholder, should be set when pushing an activity
-        newNode->activityType = action; // Placeholder, should be set when pushing an activity
-        newNode->activityDescription = desc; // Placeholder, should be set when pushing an activity
-        newNode->previousStatus = prev; // Placeholder, should be set when pushing an
-        newNode->newStatus = newStat; // Placeholder, should be set when pushing an activity
-        newNode->timestamp = time; // Placeholder, should be set when pushing an activity
-
+        newNode->activityID = nextActivityID++;
+        newNode->parcelID = pID;
+        newNode->activityType = action;
+        newNode->activityDescription = desc;
+        newNode->previousStatus = prev;
+        newNode->newStatus = newStat;
+        newNode->timestamp = time;
         newNode->next = topNode;
         topNode = newNode;
+        return true;
     }
 
-    // Pop Function: To remove the top data from the stack (Undo the last activity)
-    ActivityNode pop(){
+    ActivityNode pop() {
         if (isEmpty()) {
             cerr << "Stack is empty!" << endl;
-            return{-1, -1, "", "", (ParcelStatus) 0, (ParcelStatus) 0, "", nullptr};
+            return {-1, -1, "", "", ORDERED, ORDERED, "", nullptr};
         }
 
         ActivityNode *temp = topNode;
         ActivityNode poppedNode = *temp;
-
         topNode = topNode->next;
+        poppedNode.next = nullptr;
         delete temp;
-        count--;
-
         return poppedNode;
     }
 
-    // Display the activity history in the stack
-    void displayHistory(){
-        if (isEmpty()){
+    void displayHistory() const {
+        if (isEmpty()) {
             cout << "No activities to display." << endl;
             return;
         }
 
-        ActivityNode *current = topNode;
+        const ActivityNode *current = topNode;
         cout << "Parcel Activity History (Linked List Stack)" << endl;
-
-        // Header for the activity history
-        while (current != nullptr){
+        while (current != nullptr) {
             cout << "\n-------------------------------------" << endl;
-            cout << "Activity ID: " << current->activityID;
-            cout << " | Parcel ID: " << current->parcelID;
-            cout << " | Activity Type: " << current->activityType;
-            cout << " | Activity Description: " << current->activityDescription;
-            cout << " | Previous Status: " << current->previousStatus;
-            cout << " | New Status: " << current->newStatus;
-            cout << " | Timestamp: " << current->timestamp;
-            cout << "---------------------------------------\n" << endl;
-
+            cout << "Activity ID: " << current->activityID
+                 << " | Parcel ID: " << current->parcelID
+                 << " | Activity Type: " << current->activityType
+                 << " | Activity Description: " << current->activityDescription
+                 << " | Previous Status: " << statusText(current->previousStatus)
+                 << " | New Status: " << statusText(current->newStatus)
+                 << " | Timestamp: " << current->timestamp
+                 << "\n---------------------------------------\n";
             current = current->next;
         }
     }
 
-
+    void searchByParcelID(int parcelID) const {
+        const ActivityNode *current = topNode;
+        bool found = false;
+        while (current != nullptr) {
+            if (current->parcelID == parcelID) {
+                if (!found) {
+                    cout << "Activities for Parcel ID " << parcelID << ":" << endl;
+                    found = true;
+                }
+                cout << "Activity ID: " << current->activityID
+                     << " | Type: " << current->activityType
+                     << " | Description: " << current->activityDescription
+                     << " | Previous Status: " << statusText(current->previousStatus)
+                     << " | New Status: " << statusText(current->newStatus)
+                     << " | Timestamp: " << current->timestamp << endl;
+            }
+            current = current->next;
+        }
+        if (!found) {
+            cout << "No activity found for Parcel ID " << parcelID << "." << endl;
+        }
+    }
 };

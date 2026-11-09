@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <new>
 #include <string>
 using namespace std;
 
@@ -24,31 +25,34 @@ struct Node {
     Status status;
     Node* next;
 
-    Node(string reqID, string parID, string recName, ServiceType servType, Status stat) {
-        this->requestID = reqID;
-        this->parcelID = parID;
-        this->recipientName = recName;
-        this->serviceType = servType;
-        this->status = stat;
-        this->next = nullptr;
-    }
+    Node(string reqID, string parID, string recName, ServiceType servType, Status stat)
+        : requestID(reqID), parcelID(parID), recipientName(recName),
+          serviceType(servType), status(stat), next(nullptr) {}
 };
 
 struct Queue {
     Node* front;
     Node* rear;
 
-    Queue() {
-        front = nullptr;
+    Queue() : front(nullptr), rear(nullptr) {}
+    Queue(const Queue&) = delete;
+    Queue& operator=(const Queue&) = delete;
+
+    ~Queue() {
+        while (front != nullptr) {
+            Node* temp = front;
+            front = front->next;
+            delete temp;
+        }
         rear = nullptr;
     }
 
-    bool isEmpty(){
+    bool isEmpty() const {
         return front == nullptr;
     }
 
     void enqueue(string reqID, string parID, string recName, ServiceType servType, Status stat) {
-        Node* newNode = new Node(reqID, parID, recName, servType, stat);
+        Node* newNode = new (nothrow) Node(reqID, parID, recName, servType, stat);
         if (!newNode) {
             cout << "Memory allocation failed!" << endl;
             return;
@@ -69,29 +73,26 @@ struct Queue {
         }
         Node* temp = front;
         front = front->next;
-
         cout << "Dequeued: " << temp->requestID << endl;
         delete temp;
-
         if (front == nullptr) {
             rear = nullptr;
         }
     }
 
-    string getFront(){ 
+    string getFront() const {
         return isEmpty() ? "" : front->requestID;
     }
 
-    void deleteSpecificRequest(string requestID){
-        if(isEmpty()){
+    void deleteSpecificRequest(const string& requestID) {
+        if (isEmpty()) {
             cout << "Queue is empty!" << endl;
             return;
         }
 
         Node* curr = front;
         Node* prev = nullptr;
-
-        while (curr != nullptr && curr->requestID != requestID){
+        while (curr != nullptr && curr->requestID != requestID) {
             prev = curr;
             curr = curr->next;
         }
@@ -101,20 +102,13 @@ struct Queue {
             return;
         }
 
-        //Case 1 : The Node to delete is in the front node
         if (curr == front) {
             front = front->next;
-            if (front == nullptr){
-                rear = nullptr;
-            }
-        }
-
-        // Case 2 : The node to delete is in the MIDDLE or REAR of the queue
-        else {
+        } else {
             prev->next = curr->next;
-            if (curr == rear) {
-                rear = prev;
-            }
+        }
+        if (curr == rear) {
+            rear = prev;
         }
 
         delete curr;
