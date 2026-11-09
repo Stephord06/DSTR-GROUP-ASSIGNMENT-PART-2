@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void displayServiceMenu(TreeNode* parcelTree, Queue& serviceQueue) {
+void displayServiceMenu(TreeNode &parcelTree, Queue& serviceQueue) {
     while (true) {
         int selection = 0;
         cout << "\n========================================================" << endl;
