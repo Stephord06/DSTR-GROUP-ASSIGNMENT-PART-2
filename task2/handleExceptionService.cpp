@@ -13,6 +13,7 @@ bool isValidParcelID( const string& parcelID){
     }
     else{
         cout << "Parcel ID is valid." << endl;
+        return true;
     }
 }
 

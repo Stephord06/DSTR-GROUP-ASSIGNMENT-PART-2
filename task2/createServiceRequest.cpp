@@ -57,8 +57,10 @@ void serviceRequestInput(Queue& serviceQueue) {
         cout << "Enter Parcel ID: ";
         cin >> parcelID;
 
-        isValidParcelID(parcelID);
-        
+        if(!isValidParcelID(parcelID)){
+            continue;
+        }
+
         requestID = generateRequestID();
         cout << "Generated Request ID: " << requestID << endl;
 
