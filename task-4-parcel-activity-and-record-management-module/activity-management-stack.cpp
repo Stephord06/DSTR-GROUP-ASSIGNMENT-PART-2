@@ -36,7 +36,7 @@ public:
     }
 
 
-    // Push Function: To add the related data into the stack
+    // Push Function: To add the related data into the stack (Record the activity)
     void push(int pID, string action, string desc, ParcelStatus prev, ParcelStatus newStat, string time) {
         ActivityNode *newNode = new ActivityNode();
         newNode->activityID = count + 1;
@@ -68,6 +68,7 @@ public:
         return poppedNode;
     }
 
+    // Display the activity history in the stack
     void displayHistory(){
         if (isEmpty()){
             cout << "No activities to display." << endl;
@@ -79,7 +80,7 @@ public:
 
         // Header for the activity history
         while (current != nullptr){
-            cout << "===============================" << endl;
+            cout << "\n-------------------------------------" << endl;
             cout << "Activity ID: " << current->activityID;
             cout << " | Parcel ID: " << current->parcelID;
             cout << " | Activity Type: " << current->activityType;
@@ -87,9 +88,11 @@ public:
             cout << " | Previous Status: " << current->previousStatus;
             cout << " | New Status: " << current->newStatus;
             cout << " | Timestamp: " << current->timestamp;
-            cout << "===============================" << endl;
+            cout << "---------------------------------------\n" << endl;
 
             current = current->next;
         }
     }
+
+
 };
