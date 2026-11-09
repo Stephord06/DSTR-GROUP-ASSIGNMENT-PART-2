@@ -91,7 +91,7 @@ void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
 
         cin.ignore(1000, '\n');
         
-        recipientName = foundParcel->recipient_name;
+        recipientName = foundNode->parcel.recipient_name;
 
         serviceTypeEnum = selectServiceType();
         break;
