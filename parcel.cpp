@@ -1,10 +1,9 @@
-#pragma once
 #include <string>
 using namespace std;
 
 enum ParcelStatus {
   ORDERED,
-  SHIPED,
+  SHIPPED,
   DELIVERED,
   ON_HOLD,
 };
