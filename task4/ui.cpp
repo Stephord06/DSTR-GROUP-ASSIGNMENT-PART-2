@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void ActivityModuleUI() {
+void ActivityModuleUI(TreeNode &parcels) {
     ActivityStack myActivityStack;
     int choice;
 
@@ -32,7 +32,7 @@ void ActivityModuleUI() {
 
         switch (choice) {
             case 1: {
-                int parcelID, prevStatus, newStatus;
+                int parcelID, newStatus;
                 string action, description, timestamp;
 
                 cout << "Enter Parcel ID: ";
@@ -44,29 +44,32 @@ void ActivityModuleUI() {
                     break;
                 }
 
+                TreeNode *parcelNode = parcels.search_by_id(parcelID);
+                if (!parcelNode) {
+                    cout << "[!] Parcel not found. Register it in Task 1 before recording activity.\n" << endl;
+                    break;
+                }
+
                 cout << "Enter Activity Type (e.g., UPDATED_STATUS, DELIVERED, ORDERED, etc): ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, action);
 
                 cout << "Enter Activity Description: ";
                 getline(cin, description);
 
-                cout << "Enter Previous Status (0: ORDERED, 1: ACCEPTED, 2: DELIVERED, 3: REJECTED): ";
-                cin >> prevStatus;
-                if (cin.fail()) {
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "[!] Invalid input. Previous Status should be a number.\n" << endl;
-                    break;
-                }
-
-                cout << "Enter New Status (0: ORDERED, 1: ACCEPTED, 2: DELIVERED, 3: REJECTED): ";
-                cin >> newStatus;
-                if (cin.fail()) {
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "[!] Invalid input. New Status should be a number.\n" << endl;
-                    break;
+                while (true) {
+                    cout << "Enter New Status (0: ORDERED, 1: SHIPPED, 2: DELIVERED, 3: ON_HOLD): ";
+                    cin >> newStatus;
+                    if (cin.fail()) {
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        cout << "[!] Invalid input. Status should be a number from 0 to 3.\n";
+                        continue;
+                    }
+                    if (newStatus >= ORDERED && newStatus <= ON_HOLD) {
+                        break;
+                    }
+                    cout << "[!] Invalid status. Enter a number from 0 to 3.\n";
                 }
 
                 while (true) {
@@ -83,7 +86,10 @@ void ActivityModuleUI() {
                     }
                 }
 
-                myActivityStack.push(parcelID, action, description, (ParcelStatus)prevStatus, (ParcelStatus)newStatus, timestamp);
+                ParcelStatus previousStatus = parcelNode->parcel.status;
+                ParcelStatus updatedStatus = static_cast<ParcelStatus>(newStatus);
+                myActivityStack.push(parcelID, action, description, previousStatus, updatedStatus, timestamp);
+                parcelNode->parcel.status = updatedStatus;
                 cout << "Activity recorded successfully!\n" << endl;
                 break;
             }
@@ -103,13 +109,19 @@ void ActivityModuleUI() {
                 {
                     ActivityNode lastActivity = myActivityStack.pop();
                     if (lastActivity.activityID != -1) {
-                        cout << "Last activity undone successfully!" << endl;
+                        TreeNode *parcelNode = parcels.search_by_id(lastActivity.parcelID);
+                        if (parcelNode) {
+                            parcelNode->parcel.status = lastActivity.previousStatus;
+                            cout << "Last activity undone successfully!" << endl;
+                        } else {
+                            cout << "[!] Activity removed from history, but the parcel no longer exists; its status could not be restored." << endl;
+                        }
                         cout << "Activity ID: " << lastActivity.activityID << endl;
                         cout << "Parcel ID: " << lastActivity.parcelID << endl;
                         cout << "Activity Type: " << lastActivity.activityType << endl;
                         cout << "Activity Description: " << lastActivity.activityDescription << endl;
-                        cout << "Previous Status: " << lastActivity.previousStatus << endl;
-                        cout << "New Status: " << lastActivity.newStatus << endl;
+                        cout << "Previous Status: " << status_to_string(lastActivity.previousStatus) << endl;
+                        cout << "New Status: " << status_to_string(lastActivity.newStatus) << endl;
                         cout << "Timestamp: " << lastActivity.timestamp << endl;
                     } else {
                         cout << "[!] No activity to undo." << endl;
@@ -127,6 +139,14 @@ void ActivityModuleUI() {
                     cout << "[!] Invalid input. Parcel ID should be a number.\n" << endl;
                     break;
                 }
+                TreeNode *parcelNode = parcels.search_by_id(targetParcelID);
+                if (!parcelNode) {
+                    cout << "[!] Parcel not found.\n" << endl;
+                    break;
+                }
+                cout << "\nParcel: " << parcelNode->parcel.recipient_name
+                     << " | Current Status: " << status_to_string(parcelNode->parcel.status)
+                     << endl;
                 myActivityStack.displayTargetParcelActivity(targetParcelID);
                 break;
             }

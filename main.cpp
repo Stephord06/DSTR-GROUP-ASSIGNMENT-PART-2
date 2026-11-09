@@ -54,7 +54,7 @@ int main()
       displayResourceMenu(parcels, serviceQueue);
       break;
     case 4:
-      ActivityModuleUI();
+      ActivityModuleUI(parcels);
       break;
     case 5:
       cout << "Task 5 selected." << endl;
