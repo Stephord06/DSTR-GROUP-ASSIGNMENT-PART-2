@@ -48,7 +48,7 @@ ServiceType selectServiceType() {
     }
 }
 
-void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
+void serviceRequestInput(TreeNode &parcelTree, Queue& serviceQueue) {
     string requestID, recipientName;
     int parcelID = 0;
     ServiceType serviceTypeEnum;
@@ -64,7 +64,7 @@ void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
             return;
         }
 
-        TreeNode* foundNode = (parcelTree != nullptr) ? parcelTree->search_by_id(parcelID) : nullptr;
+        TreeNode* foundNode = (parcelID > 0) ? parcelTree.search_by_id(parcelID) : nullptr;
         // Check if the parcel exists in the tree
         if (foundNode == nullptr) {
             cout << "Invalid Parcel ID. No parcel found with ID " << parcelID << "." << endl;
