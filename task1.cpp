@@ -240,7 +240,7 @@ void full_menu(TreeNode &parcels) {
     cout << "select:";
     cout << "\n--------------------------------";
     cout << "\n1.Register new parcel";
-    cout << "\n2.Search parcel";
+    cout << "\n2.Show parcel";
     cout << "\n3.update parcel";
     cout << "\n4.Remove parcel";
     cout << "\n5.Quit";
