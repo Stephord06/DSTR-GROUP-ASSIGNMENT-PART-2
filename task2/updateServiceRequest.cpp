@@ -37,12 +37,6 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
     cout << "Enter your selection (1-5): ";
     cin >> selection;
     cout << "Enter your selection (1-4): ";
-    if (!(cin >> selection)) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Invalid selection. No changes made." << endl;
-        return;
-    }
 
     switch (selection) {
         case 1:
@@ -65,8 +59,6 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
         case 5:
             cout << "Exiting to Service Menu." << endl;
             return; // Exit without dequeuing   
-            serviceQueue.deleteSpecificRequest(serviceQueue.getFront());
-            return; // deleteSpecificRequest already removed the front node.
         default:
             cout << "Invalid selection. No changes made." << endl;
             return;

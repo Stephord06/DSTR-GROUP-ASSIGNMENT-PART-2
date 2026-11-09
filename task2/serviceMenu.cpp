@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void displayServiceMenu() {
+void displayServiceMenu(TreeNode* parcelTree) {
     while (true) {
         int selection = 0;
         cout << "\n========================================================" << endl;
@@ -23,13 +23,6 @@ void displayServiceMenu() {
         cout << "4. Exit to main menu" << endl;
 
         cout << "Enter your selection (1, 2, 3, 4): ";
-        if (!(cin >> selection)) {
-            if (cin.eof()) return;
-            cout << "Invalid input. Please enter a valid option." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
 
         switch (selection) {
             case 1:
