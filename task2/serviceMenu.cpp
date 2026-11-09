@@ -22,6 +22,8 @@ void displayServiceMenu(TreeNode* parcelTree, Queue& serviceQueue) {
         cout << "3. Process a service request" << endl;
         cout << "4. Exit to main menu" << endl;
 
+        cin >> selection;
+
         cout << "Enter your selection (1, 2, 3, 4): ";
 
         switch (selection) {

@@ -64,20 +64,18 @@ void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
             return;
         }
 
-        Parcel* foundParcel = (parcelTree != nullptr) ? parcelTree->search_by_id(parcelID) : nullptr; // Validate the parcel ID against the parcel tree
-
+        TreeNode* foundNode = (parcelTree != nullptr) ? parcelTree->search_by_id(parcelID) : nullptr;
         // Check if the parcel exists in the tree
-        if(foundParcel == nullptr) {
+        if (foundNode == nullptr) {
             cout << "Invalid Parcel ID. No parcel found with ID " << parcelID << "." << endl;
             return;
         }
-
         // Check if the parcel has already been delivered
-        if (foundParcel->status == ParcelStatus::DELIVERED) {
+        if (foundNode->parcel.status == ParcelStatus::DELIVERED) {
             cout << "The parcel with ID " << parcelID << " has already been delivered. Cannot create a service request for it." << endl;
             return;
         }
-
+        
         Node* curr = serviceQueue.front;
         while (curr != nullptr) {
             if (curr->parcelID == parcelID) {
