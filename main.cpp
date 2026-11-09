@@ -39,7 +39,7 @@ int main() {
       displayServiceMenu(parcels, serviceQueue);
       break;
     case 3:
-      displayResourceMenu();
+      displayResourceMenu(serviceQueue);
       break;
     case 4:
       ActivityModuleUI();
