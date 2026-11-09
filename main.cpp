@@ -8,6 +8,7 @@ using namespace std;
 
 int main() {
   TreeNode *parcels = new TreeNode;
+  Queue serviceQueue;
   parcels->parcel.parcelID = 101;
   parcels->parcel.recipient_name = "Alice";
   int selection = 6;
@@ -35,7 +36,7 @@ int main() {
       cout << "Task 1 is not connected yet." << endl;
       break;
     case 2:
-      displayServiceMenu(parcels);
+      displayServiceMenu(parcels, serviceQueue);
       break;
     case 3:
       displayResourceMenu();
