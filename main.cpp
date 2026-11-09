@@ -1,3 +1,4 @@
+#include "task1.cpp"
 #include "task2/serviceMenu.cpp"
 #include "task3/resourceTask3.cpp"
 #include "task3/resourceTask3Menu.cpp"
@@ -37,7 +38,7 @@ int main() {
 
     switch (selection) {
     case 1:
-      cout << "Task 1 is not connected yet." << endl;
+      full_menu(parcels);
       break;
     case 2:
       displayServiceMenu(parcels, serviceQueue);
