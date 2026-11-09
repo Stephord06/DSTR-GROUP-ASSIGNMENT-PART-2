@@ -2,7 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <cctype>
-#include "activity-management-stack.hpp"
+#include "activity-management-stack.cpp"
 
 using namespace std;
 
