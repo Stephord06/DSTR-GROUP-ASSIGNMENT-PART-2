@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <limits>
 #include <string>
 #include "queue.cpp"
 
@@ -19,12 +20,13 @@ void deleteServiceRequestInQueue(Queue& serviceQueue) {
 }
 
 void updateServiceRequestInQueue(Queue& serviceQueue) {
-    int selection;
     if (serviceQueue.isEmpty()) {
         cout << "No active service requests to process." << endl;
         return;
     }
     displayActiveRequests(serviceQueue);
+
+    int selection = 0;
     cout << "Processing request: " << serviceQueue.getFront() << endl;
     cout << "Enter one of the option below: " << endl;
     cout << "1. Mark as In Progress" << endl;
@@ -34,8 +36,15 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
     cout << "5. Exit to Service Menu" << endl;
     cout << "Enter your selection (1-5): ";
     cin >> selection;
+    cout << "Enter your selection (1-4): ";
+    if (!(cin >> selection)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid selection. No changes made." << endl;
+        return;
+    }
 
-    switch(selection) {
+    switch (selection) {
         case 1:
             serviceQueue.front->status = IN_PROGRESS;
             cout << "Request " << serviceQueue.getFront() << " marked as In Progress." << endl;
@@ -56,9 +65,11 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
         case 5:
             cout << "Exiting to Service Menu." << endl;
             return; // Exit without dequeuing   
+            serviceQueue.deleteSpecificRequest(serviceQueue.getFront());
+            return; // deleteSpecificRequest already removed the front node.
         default:
             cout << "Invalid selection. No changes made." << endl;
-            return; // Exit without dequeuing
+            return;
     }
     displayActiveRequests(serviceQueue);
     

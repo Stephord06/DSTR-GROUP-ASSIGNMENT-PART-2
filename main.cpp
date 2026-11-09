@@ -1,8 +1,8 @@
 #include "task2/serviceMenu.cpp"
 #include "task3/resourceTask3.cpp"
 #include "task3/resourceTask3Menu.cpp"
+#include "task4/ui.cpp"
 #include <iostream>
-#include <string>
 
 using namespace std;
 
@@ -41,7 +41,7 @@ int main() {
       displayResourceMenu();
       break;
     case 4:
-      cout << "Task 4 is not connected yet." << endl;
+      ActivityModuleUI();
       break;
     case 5:
       cout << "Task 5 is not connected yet." << endl;
@@ -54,6 +54,5 @@ int main() {
     }
   } while (selection != 6);
 
-  delete parcels;
   return 0;
 }
