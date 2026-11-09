@@ -6,6 +6,7 @@ enum ParcelStatus {
   ORDERED,
   SHIPED,
   DELIVERED,
+  ON_HOLD,
 };
 
 enum ParcelType {
