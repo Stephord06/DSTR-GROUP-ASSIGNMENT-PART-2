@@ -29,11 +29,11 @@ struct TreeNode {
     }
   }
 
-  Parcel *search_by_id(int id) {
+  TreeNode *search_by_id(int id) {
     TreeNode *temp = this;
     while (temp) {
       if (id == temp->parcel.parcelID) {
-        return &temp->parcel;
+        return temp;
       }
       if (id > temp->parcel.parcelID) {
         temp = temp->rightnode;
