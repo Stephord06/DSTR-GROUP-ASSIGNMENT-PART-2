@@ -1,16 +1,18 @@
 #pragma once
 #include <iostream>
+#include <limits>
 #include <string>
 #include "queue.cpp"
 
 using namespace std;
 
 void updateServiceRequestInQueue(Queue& serviceQueue) {
-    int selection;
     if (serviceQueue.isEmpty()) {
         cout << "No active service requests to process." << endl;
         return;
     }
+
+    int selection = 0;
     cout << "Processing request: " << serviceQueue.getFront() << endl;
     cout << "Enter one of the option below: " << endl;
     cout << "1. Mark as In Progress" << endl;
@@ -18,9 +20,14 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
     cout << "3. Cancel Request" << endl;
     cout << "4. Delete Request" << endl;
     cout << "Enter your selection (1-4): ";
-    cin >> selection;
+    if (!(cin >> selection)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid selection. No changes made." << endl;
+        return;
+    }
 
-    switch(selection) {
+    switch (selection) {
         case 1:
             serviceQueue.front->status = IN_PROGRESS;
             cout << "Request " << serviceQueue.getFront() << " marked as In Progress." << endl;
@@ -35,12 +42,10 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
             break;
         case 4:
             serviceQueue.deleteSpecificRequest(serviceQueue.getFront());
-            break;    
+            return; // deleteSpecificRequest already removed the front node.
         default:
             cout << "Invalid selection. No changes made." << endl;
-            return; // Exit without dequeuing
+            return;
     }
     serviceQueue.dequeue();
 }
-
-

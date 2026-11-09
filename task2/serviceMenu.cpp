@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <limits>
 #include <string>
 #include "queue.cpp"
 #include "createServiceRequest.cpp"
@@ -8,10 +9,9 @@
 
 using namespace std;
 
-// Single shared queue: defined once in resourceTask3.cpp so Task 3 sees the same requests.
-extern Queue serviceQueue;
-
 void displayServiceMenu() {
+    // Keep requests between visits to this menu without an external Queue definition.
+    static Queue serviceQueue;
     while (true) {
         int selection = 0;
         cout << "\n========================================================" << endl;
@@ -24,11 +24,11 @@ void displayServiceMenu() {
         cout << "4. Exit to main menu" << endl;
 
         cout << "Enter your selection (1, 2, 3, 4): ";
-        cin >> selection;
-        if (cin.fail()) {
+        if (!(cin >> selection)) {
+            if (cin.eof()) return;
             cout << "Invalid input. Please enter a valid option." << endl;
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
 
@@ -43,7 +43,7 @@ void displayServiceMenu() {
                 updateServiceRequestInQueue(serviceQueue);
                 break;
             case 4:
-                return; // Exit to main menu
+                return;
             default:
                 cout << "Invalid selection. Please try again." << endl;
         }
