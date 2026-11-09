@@ -1,5 +1,4 @@
 #include "task2/serviceMenu.cpp"
-#include "tree.cpp"
 #include "task3/resourceTask3.cpp"
 #include "task3/resourceTask3Menu.cpp"
 #include <iostream>
@@ -9,6 +8,8 @@ using namespace std;
 
 int main() {
   TreeNode *parcels = new TreeNode;
+  parcels->parcel.parcelID = 101;
+  parcels->parcel.recipient_name = "Alice";
   int selection = 6;
   do {
     cout << "Welcome to the Parcel Management System!" << endl;
