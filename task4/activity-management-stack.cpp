@@ -94,5 +94,37 @@ public:
         }
     }
 
+    void displayTargetParcelActivity(int targetParcelID) {
+        if (isEmpty()) {
+            cout << "No activities to display." << endl;
+            return;
+        }
+
+        ActivityNode *current = topNode;
+        bool found = false;
+
+        cout << "Searching for activities related to Parcel ID: " << targetParcelID << endl;
+
+        while (current != nullptr) {
+            if (current->parcelID == targetParcelID) {
+                found = true;
+                cout << "\n-------------------------------------" << endl;
+                cout << "Activity ID: " << current->activityID;
+                cout << " | Parcel ID: " << current->parcelID;
+                cout << " | Activity Type: " << current->activityType;
+                cout << " | Activity Description: " << current->activityDescription;
+                cout << " | Previous Status: " << current->previousStatus;
+                cout << " | New Status: " << current->newStatus;
+                cout << " | Timestamp: " << current->timestamp;
+                cout << "---------------------------------------\n" << endl;
+            }
+            current = current->next;
+        }
+
+        if (found == false) {
+            cout << "[!] No activities found for Parcel ID: " << targetParcelID << endl;
+        }
+    }
+
 
 };

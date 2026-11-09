@@ -1,6 +1,8 @@
 #include <string>
-#include "parcel.cpp"
 #include <iostream>
+#include <limits>
+#include <cctype>
+#include "parcel.cpp"
 #include "activity-management-stack.cpp"
 
 using namespace std;
@@ -21,7 +23,7 @@ void ActivityModuleUI() {
         cout << "4. Search a Parcel Activity\n";
         cout << "0. Exit\n";
 
-        cout << "\nEnter your choice: ";
+        cout << "\nEnter your choice (0-4): ";
         cin >> choice;
 
         if (cin.fail()) {
@@ -120,6 +122,17 @@ void ActivityModuleUI() {
                 break;
             case 4:
                 // Call the function to search a parcel activity
+
+                int targetParcelID;
+                cout << "Enter Parcel ID to search: ";
+                cin >> targetParcelID;
+                if (cin.fail()) {
+                    cin.clear(); // Clear the error flag
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+                    cout << "[!] Invalid input. Parcel ID should a number.\n" << endl;
+                    break;
+                }
+                myActivityStack.displayTargetParcelActivity(targetParcelID);
                 break;
             case 0:
                 cout << "Exiting Parcel Activity and Record Management Module." << endl;
