@@ -1,8 +1,8 @@
 #include "resourceTask3.hpp"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <ctime>
 #include <iostream>
 
 using namespace std;
@@ -17,6 +17,7 @@ void initResourceQueue(ResourceQueue *queue) {
     queue->head = 0;
     queue->tail = -1;
     queue->size = 0;
+
     for (int i = 0; i < RESOURCE_MAX_SIZE; ++i) {
         queue->records[i] = {0, 0, RESOURCE_AVAILABLE, NO_ASSIGNMENT, 0, 0};
     }
@@ -55,18 +56,65 @@ int countResourceStatus(const ResourceQueue *queue, int resourceType, int status
     for (int offset = 0; offset < queue->size; ++offset) {
         const int index = (queue->head + offset) % RESOURCE_MAX_SIZE;
         const ResourceRecord &record = queue->records[index];
-        if ((resourceType == 0 || record.type == resourceType) && record.status == status) ++count;
+        if ((resourceType == 0 || record.type == resourceType) && record.status == status) {
+            ++count;
+        }
     }
     return count;
 }
 
+void getResourceTypeText(int type, char *out, size_t len) {
+    if (!out || len == 0) return;
+    if (type == COUNTER) {
+        snprintf(out, len, "Counter");
+    } else if (type == DELIVERY) {
+        snprintf(out, len, "Delivery");
+    } else {
+        snprintf(out, len, "Unknown");
+    }
+}
+
+void getResourceStatusText(int status, char *out, size_t len) {
+    if (!out || len == 0) return;
+    if (status == RESOURCE_AVAILABLE) {
+        snprintf(out, len, "Available");
+    } else if (status == RESOURCE_BUSY) {
+        snprintf(out, len, "Busy");
+    } else if (status == RESOURCE_UNAVAILABLE) {
+        snprintf(out, len, "Unavailable");
+    } else {
+        snprintf(out, len, "Unknown");
+    }
+}
+
+void getAssignmentText(const ResourceQueue *queue, int index, char *out, size_t len) {
+    if (!out || len == 0) return;
+    if (!queue || index < 0 || index >= queue->size) {
+        snprintf(out, len, "-");
+        return;
+    }
+
+    const ResourceRecord &record = queue->records[index];
+    if (record.kind == NO_ASSIGNMENT) {
+        snprintf(out, len, "-");
+        return;
+    }
+    if (record.kind == ASSIGN_PARCEL) {
+        snprintf(out, len, "Parcel #%d", record.parcelId);
+    } else if (record.kind == ASSIGN_REQUEST) {
+        snprintf(out, len, "Request #%d / Parcel #%d", record.itemId, record.parcelId);
+    } else {
+        snprintf(out, len, "-");
+    }
+}
+
 void recordResourceActivity(const char *message) {
     if (!message) return;
-    if (activityCount == RESOURCE_LOG_LIMIT) {
+    if (activityCount >= RESOURCE_LOG_LIMIT) {
         for (int i = 1; i < RESOURCE_LOG_LIMIT; ++i) {
             memcpy(activityHistory[i - 1], activityHistory[i], RESOURCE_TEXT_SIZE);
         }
-        --activityCount;
+        activityCount = RESOURCE_LOG_LIMIT - 1;
     }
     snprintf(activityHistory[activityCount], RESOURCE_TEXT_SIZE, "%s", message);
     ++activityCount;
@@ -75,17 +123,22 @@ void recordResourceActivity(const char *message) {
 bool registerResource(ResourceQueue *queue, int resourceId, int resourceType) {
     if (!queue || resourceId <= 0 ||
         (resourceType != COUNTER && resourceType != DELIVERY) ||
-        isResourceQueueFull(queue) || findResourceIndex(queue, resourceId) != -1) return false;
+        isResourceQueueFull(queue) || findResourceIndex(queue, resourceId) != -1) {
+        return false;
+    }
 
-    const int index = (queue->size == 0) ? 0 : (queue->tail + 1) % RESOURCE_MAX_SIZE;
-    queue->records[index] = {resourceId, resourceType, RESOURCE_AVAILABLE, NO_ASSIGNMENT, 0, 0};
-    if (queue->size == 0) queue->head = index;
-    queue->tail = index;
+    const int insertIndex = (queue->size == 0) ? 0 : (queue->tail + 1) % RESOURCE_MAX_SIZE;
+    queue->records[insertIndex] = {resourceId, resourceType, RESOURCE_AVAILABLE, NO_ASSIGNMENT, 0, 0};
+
+    if (queue->size == 0) {
+        queue->head = insertIndex;
+    }
+    queue->tail = insertIndex;
     ++queue->size;
 
     char message[RESOURCE_TEXT_SIZE];
-    snprintf(message, sizeof(message), "Resource %d registered (%s)", resourceId,
-             resourceType == COUNTER ? "counter" : "delivery");
+    snprintf(message, sizeof(message), "Resource %d registered as %s",
+             resourceId, resourceType == COUNTER ? "Counter" : "Delivery");
     recordResourceActivity(message);
     return true;
 }
@@ -93,18 +146,20 @@ bool registerResource(ResourceQueue *queue, int resourceId, int resourceType) {
 bool assignResource(ResourceQueue *queue, int resourceId, int assignmentKind,
                     int itemId, int parcelId) {
     if (!queue || resourceId <= 0 || itemId <= 0 ||
-        (assignmentKind != ASSIGN_PARCEL && assignmentKind != ASSIGN_REQUEST) ||
-        (assignmentKind == ASSIGN_REQUEST && parcelId <= 0)) return false;
+        (assignmentKind != ASSIGN_PARCEL && assignmentKind != ASSIGN_REQUEST)) {
+        return false;
+    }
+    if (assignmentKind == ASSIGN_REQUEST && parcelId <= 0) return false;
 
     const int index = findResourceIndex(queue, resourceId);
     if (index == -1 || queue->records[index].status != RESOURCE_AVAILABLE) return false;
 
-    // Prevent the same parcel/request from being actively assigned twice.
     for (int offset = 0; offset < queue->size; ++offset) {
         const int other = (queue->head + offset) % RESOURCE_MAX_SIZE;
         const ResourceRecord &record = queue->records[other];
-        if (record.status == RESOURCE_BUSY && record.kind == assignmentKind &&
-            record.itemId == itemId) return false;
+        if (record.status == RESOURCE_BUSY && record.kind == assignmentKind && record.itemId == itemId) {
+            return false;
+        }
     }
 
     ResourceRecord &record = queue->records[index];
@@ -114,8 +169,8 @@ bool assignResource(ResourceQueue *queue, int resourceId, int assignmentKind,
     record.parcelId = assignmentKind == ASSIGN_PARCEL ? itemId : parcelId;
 
     char message[RESOURCE_TEXT_SIZE];
-    snprintf(message, sizeof(message), "Resource %d assigned %s %d", resourceId,
-             assignmentKind == ASSIGN_REQUEST ? "request" : "parcel", itemId);
+    snprintf(message, sizeof(message), "Resource %d assigned to %s #%d",
+             resourceId, assignmentKind == ASSIGN_REQUEST ? "Request" : "Parcel", itemId);
     recordResourceActivity(message);
     return true;
 }
@@ -134,8 +189,8 @@ bool releaseResource(ResourceQueue *queue, int resourceId) {
     record.parcelId = 0;
 
     char message[RESOURCE_TEXT_SIZE];
-    snprintf(message, sizeof(message), "Resource %d released %s %d", resourceId,
-             kind == ASSIGN_REQUEST ? "request" : (kind == ASSIGN_PARCEL ? "parcel" : "manual hold"), itemId);
+    snprintf(message, sizeof(message), "Resource %d released %s #%d",
+             resourceId, kind == ASSIGN_REQUEST ? "Request" : "Parcel", itemId);
     recordResourceActivity(message);
     return true;
 }
@@ -143,15 +198,20 @@ bool releaseResource(ResourceQueue *queue, int resourceId) {
 bool updateResourceStatus(ResourceQueue *queue, int resourceId, int newStatus) {
     if (!queue || resourceId <= 0 ||
         (newStatus != RESOURCE_AVAILABLE && newStatus != RESOURCE_BUSY &&
-         newStatus != RESOURCE_UNAVAILABLE)) return false;
+         newStatus != RESOURCE_UNAVAILABLE)) {
+        return false;
+    }
+
     const int index = findResourceIndex(queue, resourceId);
     if (index == -1) return false;
 
     ResourceRecord &record = queue->records[index];
     if (record.status == newStatus) return false;
-    if (newStatus == RESOURCE_BUSY && record.status == RESOURCE_UNAVAILABLE) return false;
+    if (record.status == RESOURCE_BUSY && newStatus == RESOURCE_UNAVAILABLE) {
+        // keep it simple: cannot force an occupied resource to unavailable without release
+        return false;
+    }
 
-    // Changing an assigned resource away from BUSY explicitly clears its assignment.
     if (newStatus != RESOURCE_BUSY) {
         record.kind = NO_ASSIGNMENT;
         record.itemId = 0;
@@ -159,10 +219,11 @@ bool updateResourceStatus(ResourceQueue *queue, int resourceId, int newStatus) {
     }
     record.status = newStatus;
 
-    const char *statusText = newStatus == RESOURCE_AVAILABLE ? "available" :
-                             newStatus == RESOURCE_BUSY ? "busy" : "unavailable";
     char message[RESOURCE_TEXT_SIZE];
-    snprintf(message, sizeof(message), "Resource %d marked %s", resourceId, statusText);
+    snprintf(message, sizeof(message), "Resource %d marked %s",
+             resourceId,
+             newStatus == RESOURCE_AVAILABLE ? "Available" :
+             newStatus == RESOURCE_BUSY ? "Busy" : "Unavailable");
     recordResourceActivity(message);
     return true;
 }
@@ -172,8 +233,7 @@ bool removeResource(ResourceQueue *queue, int resourceId) {
     const int index = findResourceIndex(queue, resourceId);
     if (index == -1 || queue->records[index].status == RESOURCE_BUSY) return false;
 
-    const int offsetToRemove = (index - queue->head + RESOURCE_MAX_SIZE) % RESOURCE_MAX_SIZE;
-    for (int offset = offsetToRemove; offset < queue->size - 1; ++offset) {
+    for (int offset = index; offset < queue->size - 1; ++offset) {
         const int current = (queue->head + offset) % RESOURCE_MAX_SIZE;
         const int next = (queue->head + offset + 1) % RESOURCE_MAX_SIZE;
         queue->records[current] = queue->records[next];
@@ -199,25 +259,24 @@ void showResourceBoard(const ResourceQueue *queue) {
         return;
     }
 
-    cout << "\nResource availability (" << queue->size << "/" << RESOURCE_MAX_SIZE << ")\n";
+    cout << "\nResource board\n";
     cout << "ID  Type      Status        Assignment\n";
     for (int offset = 0; offset < queue->size; ++offset) {
         const int index = (queue->head + offset) % RESOURCE_MAX_SIZE;
         const ResourceRecord &record = queue->records[index];
-        const char *type = record.type == COUNTER ? "Counter" : "Delivery";
-        const char *status = record.status == RESOURCE_AVAILABLE ? "Available" :
-                             record.status == RESOURCE_BUSY ? "Occupied" : "Unavailable";
-        char assignment[RESOURCE_TEXT_SIZE];
-        if (record.kind == ASSIGN_PARCEL) {
-            snprintf(assignment, sizeof(assignment), "Parcel #%d", record.parcelId);
-        } else if (record.kind == ASSIGN_REQUEST) {
-            snprintf(assignment, sizeof(assignment), "Request #%d / Parcel #%d", record.itemId, record.parcelId);
-        } else {
-            snprintf(assignment, sizeof(assignment), "-");
-        }
-        printf("%-3d %-9s %-13s %s\n", record.id, type, status, assignment);
+        char typeText[RESOURCE_TEXT_SIZE];
+        char statusText[RESOURCE_TEXT_SIZE];
+        char assignmentText[RESOURCE_TEXT_SIZE];
+
+        getResourceTypeText(record.type, typeText, sizeof(typeText));
+        getResourceStatusText(record.status, statusText, sizeof(statusText));
+        getAssignmentText(queue, index, assignmentText, sizeof(assignmentText));
+
+        printf("%-3d %-9s %-13s %s\n",
+               record.id, typeText, statusText, assignmentText);
     }
-    printf("Available: %d | Occupied: %d | Unavailable: %d\n",
+
+    printf("Available: %d | Busy: %d | Unavailable: %d\n",
            countResourceStatus(queue, 0, RESOURCE_AVAILABLE),
            countResourceStatus(queue, 0, RESOURCE_BUSY),
            countResourceStatus(queue, 0, RESOURCE_UNAVAILABLE));
@@ -225,11 +284,12 @@ void showResourceBoard(const ResourceQueue *queue) {
 
 void showResourceActivityHistory() {
     if (activityCount == 0) {
-        cout << "No resource activity recorded.\n";
+        cout << "No activity recorded.\n";
         return;
     }
-    cout << "\nRecent resource activity\n";
+
+    cout << "\nResource activity log\n";
     for (int i = activityCount - 1; i >= 0; --i) {
-        cout << (i + 1) << ". " << activityHistory[i] << '\n';
+        cout << (activityCount - i) << ". " << activityHistory[i] << '\n';
     }
 }

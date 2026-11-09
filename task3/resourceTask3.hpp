@@ -3,9 +3,9 @@
 
 #include <cstddef>
 
-const int RESOURCE_MAX_SIZE = 20;
-const int RESOURCE_LOG_LIMIT = 40;
-const int RESOURCE_TEXT_SIZE = 128;
+#define RESOURCE_MAX_SIZE 20
+#define RESOURCE_TEXT_SIZE 128
+#define RESOURCE_LOG_LIMIT 40
 
 enum ResourceType {
     COUNTER = 1,
@@ -33,7 +33,6 @@ struct ResourceRecord {
     int parcelId;
 };
 
-// Fixed-size circular queue implemented without STL containers.
 struct ResourceQueue {
     ResourceRecord records[RESOURCE_MAX_SIZE];
     int head;
@@ -46,9 +45,14 @@ extern ResourceQueue resourcePool;
 void initResourceQueue(ResourceQueue *queue);
 bool isResourceQueueEmpty(const ResourceQueue *queue);
 bool isResourceQueueFull(const ResourceQueue *queue);
+
 int findResourceIndex(const ResourceQueue *queue, int resourceId);
 int findNextAvailableIndex(const ResourceQueue *queue, int resourceType);
 int countResourceStatus(const ResourceQueue *queue, int resourceType, int status);
+
+void getResourceTypeText(int type, char *out, size_t len);
+void getResourceStatusText(int status, char *out, size_t len);
+void getAssignmentText(const ResourceQueue *queue, int index, char *out, size_t len);
 
 bool registerResource(ResourceQueue *queue, int resourceId, int resourceType);
 bool assignResource(ResourceQueue *queue, int resourceId, int assignmentKind,
@@ -57,9 +61,12 @@ bool releaseResource(ResourceQueue *queue, int resourceId);
 bool updateResourceStatus(ResourceQueue *queue, int resourceId, int newStatus);
 bool removeResource(ResourceQueue *queue, int resourceId);
 
-void showResourceBoard(const ResourceQueue *queue);
-void showResourceActivityHistory();
 void recordResourceActivity(const char *message);
+void showResourceActivityHistory();
+void showResourceBoard(const ResourceQueue *queue);
+
+bool readInt(const char *prompt, int *value);
+bool readTextLine(const char *prompt, char *buffer, size_t maxLen);
 int displayResourceMenu();
 
 #endif
