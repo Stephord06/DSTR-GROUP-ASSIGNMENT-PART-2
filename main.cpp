@@ -1,14 +1,19 @@
 #include "task2/serviceMenu.cpp"
+#include "task5/ParcelCategoryList.hpp"
 #include "tree.cpp"
 #include <iostream>
 #include <string>
 
 using namespace std;
 
-int main() {
+void runTask5Menu();
+
+int main()
+{
   TreeNode *parcels = new TreeNode;
   int selection = 6;
-  do {
+  do
+  {
     cout << "Welcome to the Parcel Management System!" << endl;
     cout << "Please select an option:" << endl;
     cout << "1. Task 1 - Parcel Intake, Sorting and Processing Module" << endl;
@@ -24,7 +29,8 @@ int main() {
     cout << "Enter your selection (1,2,3,4,5,6) : ";
     cin >> selection;
 
-    switch (selection) {
+    switch (selection)
+    {
     case 1:
       cout << "Task 1 selected." << endl;
       // Call Task 1 function here
@@ -43,7 +49,7 @@ int main() {
       break;
     case 5:
       cout << "Task 5 selected." << endl;
-      // Call Task 5 function here
+      runTask5Menu();
       break;
     case 6:
       cout << "Exiting the program. Goodbye!" << endl;

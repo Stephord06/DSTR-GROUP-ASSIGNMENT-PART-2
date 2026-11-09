@@ -1,18 +1,28 @@
+#pragma once
 #include <string>
+
 using namespace std;
 
-enum ParcelStatus {
+enum ParcelStatus
+{
   ORDERED,
-  SHIPED,
+  SHIPPED,
   DELIVERED,
+  COLLECTED,
+  RETURNED,
+  CANCELLED,
 };
 
-enum ParcelType {
+enum ParcelType
+{
   DOCUMENT,
   ELECTRONIC,
+  FRAGILE_GOODS,
+  GENERAL_PARCEL,
 };
 
-struct Parcel {
+struct Parcel
+{
   string recipient_name, delivery_address, arrival_date;
   // The IDs are integers to be easier to handle with trees
   int recipientID, parcelID;
