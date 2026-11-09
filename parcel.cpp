@@ -1,57 +1,92 @@
+#pragma once
 #include <string>
+
 using namespace std;
 
-enum ParcelStatus {
+enum ParcelStatus
+{
   ORDERED,
   SHIPPED,
   DELIVERED,
-  ON_HOLD,
+  COLLECTED,
+  RETURNED,
+  CANCELLED,
+  ON_HOLD
 };
-string status_to_string(ParcelStatus status) {
-  switch (status) {
-  case ORDERED: {
+
+inline string status_to_string(ParcelStatus status)
+{
+  switch (status)
+  {
+  case ORDERED:
     return "Ordered";
-  }
-  case SHIPPED: {
+  case SHIPPED:
     return "Shipped";
-  }
-  case ON_HOLD: {
-    return "On hold";
-  }
-  case DELIVERED: {
+  case DELIVERED:
     return "Delivered";
-  }
+  case COLLECTED:
+    return "Collected";
+  case RETURNED:
+    return "Returned";
+  case CANCELLED:
+    return "Cancelled";
+  case ON_HOLD:
+    return "On hold";
+  default:
+    return "Unknown";
   }
 }
 
-enum ParcelType {
+enum ParcelType
+{
   DOCUMENT,
   ELECTRONIC,
+  FRAGILE_GOODS,
+  GENERAL_PARCEL
 };
 
-string type_to_string(ParcelType type) {
-  switch (type) {
-  case DOCUMENT: {
+inline string type_to_string(ParcelType type)
+{
+  switch (type)
+  {
+  case DOCUMENT:
     return "Document";
-  }
-  case ELECTRONIC: {
+  case ELECTRONIC:
     return "Electronic";
-  }
-  }
-}
-string fragile_to_string(bool is_fragile) {
-  if (is_fragile) {
-    return "Yes";
-  } else {
-    return "No";
+  case FRAGILE_GOODS:
+    return "Fragile Goods";
+  case GENERAL_PARCEL:
+    return "General Parcel";
+  default:
+    return "Unknown";
   }
 }
 
-struct Parcel {
-  string recipient_name, delivery_address, arrival_date;
-  // The IDs are integers to be easier to handle with trees
-  int recipientID, parcelID;
+inline string fragile_to_string(bool is_fragile)
+{
+  return is_fragile ? "Yes" : "No";
+}
+
+struct Parcel
+{
+  string recipient_name;
+  string delivery_address;
+  string arrival_date;
+  int recipientID;
+  int parcelID;
   bool fragile;
   ParcelType type;
-  ParcelStatus status = ParcelStatus::ORDERED;
+  ParcelStatus status;
+
+  // Default constructor
+  Parcel()
+      : recipient_name(""), delivery_address(""), arrival_date(""),
+        recipientID(0), parcelID(0), fragile(false),
+        type(DOCUMENT), status(ORDERED) {}
+
+  // Parameterized constructor (supports both 7-arg and 8-arg initializations)
+  Parcel(string name, string addr, string date, int rID, int pID, bool frag,
+         ParcelType t, ParcelStatus s = ORDERED)
+      : recipient_name(name), delivery_address(addr), arrival_date(date),
+        recipientID(rID), parcelID(pID), fragile(frag), type(t), status(s) {}
 };
