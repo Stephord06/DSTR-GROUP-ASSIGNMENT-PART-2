@@ -5,13 +5,14 @@
 #include "createServiceRequest.cpp"
 #include "maintainActiveRequests.cpp"
 #include "updateServiceRequest.cpp"
+#include "../tree.cpp"
 
 using namespace std;
 
 // Single shared queue: defined once in resourceTask3.cpp so Task 3 sees the same requests.
 extern Queue serviceQueue;
 
-void displayServiceMenu() {
+void displayServiceMenu(TreeNode* parcelTree) {
     while (true) {
         int selection = 0;
         cout << "\n========================================================" << endl;
@@ -34,7 +35,7 @@ void displayServiceMenu() {
 
         switch (selection) {
             case 1:
-                serviceRequestInput(serviceQueue);
+                serviceRequestInput(parcelTree, serviceQueue);
                 break;
             case 2:
                 displayActiveRequests(serviceQueue);

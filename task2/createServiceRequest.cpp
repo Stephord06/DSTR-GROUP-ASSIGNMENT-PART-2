@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "handleExceptionService.cpp"
 #include "queue.cpp"
+#include "../tree.cpp"
 
 using namespace std;
 
@@ -48,16 +48,26 @@ ServiceType selectServiceType() {
     }
 }
 
-void serviceRequestInput(Queue& serviceQueue) {
-    string requestID, parcelID, recipientName;
+void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
+    string requestID, recipientName;
+    int parcelID = 0;
     ServiceType serviceTypeEnum;
     Status status = PENDING;
 
     while (true) {
-        cout << "Enter Parcel ID: ";
-        cin >> parcelID;
 
-        if(!isValidParcelID(parcelID)){
+        cout << "Enter Parcel ID: ";
+        if (!(cin >> parcelID)) {
+            cout << "Invalid input. Please enter a valid numerical Parcel ID." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
+        Parcel* foundParcel = (parcelTree != nullptr) ? parcelTree->search_by_id(parcelID) : nullptr; // Validate the parcel ID against the parcel tree
+
+        if(foundParcel == nullptr) {
+            cout << "Invalid Parcel ID. No parcel found with ID " << parcelID << "." << endl;
             continue;
         }
 
@@ -65,13 +75,8 @@ void serviceRequestInput(Queue& serviceQueue) {
         cout << "Generated Request ID: " << requestID << endl;
 
         cin.ignore(1000, '\n');
-        cout << "Enter Recipient Name: ";
-        getline(cin, recipientName);
-
-        if (recipientName.empty()) {
-            cout << "Recipient name cannot be empty. Please try again." << endl;
-            continue;
-        }
+        
+        recipientName = foundParcel->recipient_name;
 
         serviceTypeEnum = selectServiceType();
         break;

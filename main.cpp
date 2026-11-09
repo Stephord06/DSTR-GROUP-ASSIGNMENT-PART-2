@@ -34,7 +34,7 @@ int main() {
       cout << "Task 1 is not connected yet." << endl;
       break;
     case 2:
-      displayServiceMenu();
+      displayServiceMenu(parcels);
       break;
     case 3:
       displayResourceMenu();

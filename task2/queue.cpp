@@ -19,12 +19,13 @@ enum ServiceType {
 };
 
 struct Node {
-    string requestID, parcelID, recipientName;
+    string requestID, recipientName;
+    int parcelID;
     ServiceType serviceType;
     Status status;
     Node* next;
 
-    Node(string reqID, string parID, string recName, ServiceType servType, Status stat) {
+    Node(string reqID, int parID, string recName, ServiceType servType, Status stat) {
         this->requestID = reqID;
         this->parcelID = parID;
         this->recipientName = recName;
@@ -47,7 +48,7 @@ struct Queue {
         return front == nullptr;
     }
 
-    void enqueue(string reqID, string parID, string recName, ServiceType servType, Status stat) {
+    void enqueue(string reqID, int parID, string recName, ServiceType servType, Status stat) {
         Node* newNode = new Node(reqID, parID, recName, servType, stat);
         if (!newNode) {
             cout << "Memory allocation failed!" << endl;
