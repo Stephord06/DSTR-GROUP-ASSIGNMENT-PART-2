@@ -1,42 +1,61 @@
+#pragma once
 #include "parcel.cpp"
 #include <iostream>
 using namespace std;
 
-struct TreeNode {
+struct TreeNode
+{
   Parcel parcel;
   TreeNode *leftnode = nullptr;
   TreeNode *rightnode = nullptr;
 
-  void push_child(TreeNode *node) {
+  void push_child(TreeNode *node)
+  {
     TreeNode *temp = this;
-    while (true) {
-      if (node->parcel.parcelID > temp->parcel.parcelID) {
-        if (!temp->rightnode) {
+    while (true)
+    {
+      if (node->parcel.parcelID > temp->parcel.parcelID)
+      {
+        if (!temp->rightnode)
+        {
           temp->rightnode = node;
           break;
-        } else {
+        }
+        else
+        {
           temp = temp->rightnode;
         }
-      } else {
-        if (!temp->leftnode) {
+      }
+      else
+      {
+        if (!temp->leftnode)
+        {
           temp->leftnode = node;
           break;
-        } else {
+        }
+        else
+        {
           temp = temp->leftnode;
         }
       }
     }
   }
 
-  TreeNode *search_by_id(int id) {
+  TreeNode *search_by_id(int id)
+  {
     TreeNode *temp = this;
-    while (temp) {
-      if (id == temp->parcel.parcelID) {
+    while (temp)
+    {
+      if (id == temp->parcel.parcelID)
+      {
         return temp;
       }
-      if (id > temp->parcel.parcelID) {
+      if (id > temp->parcel.parcelID)
+      {
         temp = temp->rightnode;
-      } else {
+      }
+      else
+      {
         temp = temp->leftnode;
       }
     }
