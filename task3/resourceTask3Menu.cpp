@@ -1,4 +1,4 @@
-#include "task3/resourceTask3.hpp"
+#include "resourceTask3.hpp"
 
 #include <cerrno>
 #include <climits>
@@ -9,6 +9,7 @@
 using namespace std;
 
 static bool menuInputClosed = false;
+static bool resourceQueueInitialized = false;
 
 static void clearInputBuffer() {
     int ch;
@@ -68,7 +69,10 @@ bool readTextLine(const char *prompt, char *buffer, size_t maxLen) {
 
 int displayResourceMenu() {
     int choice = 0;
-    initResourceQueue(&resourcePool);
+    if (!resourceQueueInitialized) {
+        initResourceQueue(&resourcePool);
+        resourceQueueInitialized = true;
+    }
 
     do {
         cout << "\n=========================================" << endl;
