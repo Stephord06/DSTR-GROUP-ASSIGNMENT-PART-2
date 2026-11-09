@@ -1,4 +1,3 @@
-#pragma once
 #include "parcel.cpp"
 #include <iostream>
 using namespace std;
