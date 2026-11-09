@@ -1,26 +1,44 @@
 #pragma once
 #include <iostream>
+#include <limits>
 #include <string>
 #include "queue.cpp"
 
 using namespace std;
 
+void deleteServiceRequestInQueue(Queue& serviceQueue) {
+    if (serviceQueue.isEmpty()) {
+        cout << "No active service requests to delete." << endl;
+        return;
+    }
+    displayActiveRequests(serviceQueue);
+    cout << "Enter the Request ID to delete: ";
+    string requestID;
+    cin >> requestID;
+
+    serviceQueue.deleteSpecificRequest(requestID);
+}
+
 void updateServiceRequestInQueue(Queue& serviceQueue) {
-    int selection;
     if (serviceQueue.isEmpty()) {
         cout << "No active service requests to process." << endl;
         return;
     }
+    displayActiveRequests(serviceQueue);
+
+    int selection = 0;
     cout << "Processing request: " << serviceQueue.getFront() << endl;
     cout << "Enter one of the option below: " << endl;
     cout << "1. Mark as In Progress" << endl;
     cout << "2. Mark as Completed" << endl;
     cout << "3. Cancel Request" << endl;
     cout << "4. Delete Request" << endl;
-    cout << "Enter your selection (1-4): ";
+    cout << "5. Exit to Service Menu" << endl;
+    cout << "Enter your selection (1-5): ";
     cin >> selection;
+    cout << "Enter your selection (1-4): ";
 
-    switch(selection) {
+    switch (selection) {
         case 1:
             serviceQueue.front->status = IN_PROGRESS;
             cout << "Request " << serviceQueue.getFront() << " marked as In Progress." << endl;
@@ -28,19 +46,26 @@ void updateServiceRequestInQueue(Queue& serviceQueue) {
         case 2:
             serviceQueue.front->status = COMPLETED;
             cout << "Request " << serviceQueue.getFront() << " marked as Completed." << endl;
+            serviceQueue.dequeue();
             break;
         case 3:
             serviceQueue.front->status = CANCELED;
             cout << "Request " << serviceQueue.getFront() << " has been canceled." << endl;
+            serviceQueue.dequeue();
             break;
         case 4:
-            serviceQueue.deleteSpecificRequest(serviceQueue.getFront());
+            deleteServiceRequestInQueue(serviceQueue);
             break;    
+        case 5:
+            cout << "Exiting to Service Menu." << endl;
+            return; // Exit without dequeuing   
         default:
             cout << "Invalid selection. No changes made." << endl;
-            return; // Exit without dequeuing
+            return;
     }
-    serviceQueue.dequeue();
+    displayActiveRequests(serviceQueue);
+    
 }
+
 
 

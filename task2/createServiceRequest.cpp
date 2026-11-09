@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "handleExceptionService.cpp"
 #include "queue.cpp"
+#include "../tree.cpp"
 
 using namespace std;
 
@@ -48,30 +48,50 @@ ServiceType selectServiceType() {
     }
 }
 
-void serviceRequestInput(Queue& serviceQueue) {
-    string requestID, parcelID, recipientName;
+void serviceRequestInput(TreeNode* parcelTree, Queue& serviceQueue) {
+    string requestID, recipientName;
+    int parcelID = 0;
     ServiceType serviceTypeEnum;
     Status status = PENDING;
 
     while (true) {
-        cout << "Enter Parcel ID: ";
-        cin >> parcelID;
 
-        if(!isValidParcelID(parcelID)){
-            continue;
+        cout << "Enter Parcel ID: ";
+        if (!(cin >> parcelID)) {
+            cout << "Invalid input. Please enter a valid numerical Parcel ID." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return;
         }
 
+        TreeNode* foundNode = (parcelTree != nullptr) ? parcelTree->search_by_id(parcelID) : nullptr;
+        // Check if the parcel exists in the tree
+        if (foundNode == nullptr) {
+            cout << "Invalid Parcel ID. No parcel found with ID " << parcelID << "." << endl;
+            return;
+        }
+        // Check if the parcel has already been delivered
+        if (foundNode->parcel.status == ParcelStatus::DELIVERED) {
+            cout << "The parcel with ID " << parcelID << " has already been delivered. Cannot create a service request for it." << endl;
+            return;
+        }
+        
+        Node* curr = serviceQueue.front;
+        while (curr != nullptr) {
+            if (curr->parcelID == parcelID) {
+                cout << "A service request for Parcel ID " << parcelID << " already exists in the queue. Cannot create a duplicate request." << endl;
+                return; // Exit the function to prevent adding a duplicate request
+            }
+            curr = curr->next; // Move to the next node
+        }
+
+        //auto generate a unique request ID for the new service request
         requestID = generateRequestID();
         cout << "Generated Request ID: " << requestID << endl;
 
         cin.ignore(1000, '\n');
-        cout << "Enter Recipient Name: ";
-        getline(cin, recipientName);
-
-        if (recipientName.empty()) {
-            cout << "Recipient name cannot be empty. Please try again." << endl;
-            continue;
-        }
+        
+        recipientName = foundNode->parcel.recipient_name;
 
         serviceTypeEnum = selectServiceType();
         break;

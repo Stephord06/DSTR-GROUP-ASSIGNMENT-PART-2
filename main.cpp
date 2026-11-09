@@ -1,4 +1,7 @@
 #include "task2/serviceMenu.cpp"
+#include "task3/resourceTask3.cpp"
+#include "task3/resourceTask3Menu.cpp"
+#include "task4/ui.cpp"
 #include "task5/ParcelCategoryList.hpp"
 #include "tree.cpp"
 #include <iostream>
@@ -11,6 +14,9 @@ void runTask5Menu();
 int main()
 {
   TreeNode *parcels = new TreeNode;
+  Queue serviceQueue;
+  parcels->parcel.parcelID = 101;
+  parcels->parcel.recipient_name = "Alice";
   int selection = 6;
   do
   {
@@ -25,27 +31,31 @@ int main()
     cout << "4. Task 4 - Parcel Activity and Record Management Module" << endl;
     cout << "5. Task 5 - Parcel Category Organization Module" << endl;
     cout << "6. Exit" << endl;
-    cout << "\n \n";
-    cout << "Enter your selection (1,2,3,4,5,6) : ";
-    cin >> selection;
+    cout << "Enter your selection (1-6): ";
+    if (!(cin >> selection))
+    {
+      if (cin.eof())
+        break;
+      cin.clear();
+      cin.ignore(10000, '\n');
+      cout << "Invalid selection. Please enter a number.\n";
+      continue;
+    }
+    cin.ignore(10000, '\n');
 
     switch (selection)
     {
     case 1:
-      cout << "Task 1 selected." << endl;
-      // Call Task 1 function here
+      cout << "Task 1 is not connected yet." << endl;
       break;
     case 2:
-      cout << "Task 2 selected." << endl;
-      displayServiceMenu();
+      displayServiceMenu(parcels, serviceQueue);
       break;
     case 3:
-      cout << "Task 3 selected." << endl;
-      // Call Task 3 function here
+      displayResourceMenu();
       break;
     case 4:
-      cout << "Task 4 selected." << endl;
-      // Call Task 4 function here
+      ActivityModuleUI();
       break;
     case 5:
       cout << "Task 5 selected." << endl;
@@ -58,4 +68,6 @@ int main()
       cout << "Invalid selection. Please try again." << endl;
     }
   } while (selection != 6);
+
+  return 0;
 }

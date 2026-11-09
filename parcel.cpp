@@ -11,6 +11,7 @@ enum ParcelStatus
   COLLECTED,
   RETURNED,
   CANCELLED,
+  ON_HOLD,
 };
 
 enum ParcelType
